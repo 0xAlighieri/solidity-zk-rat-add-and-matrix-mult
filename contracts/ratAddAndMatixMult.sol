@@ -14,12 +14,9 @@ contract ECWeek3 {
     ECPoint G = ECPoint(1, 2);
     
 
-
     function add(ECPoint memory P, ECPoint memory Q) public view returns (ECPoint memory R) {
         (bool success, bytes memory data) = address(0x06).staticcall(abi.encode(P.x, P.y, Q.x, Q.y));
-
         require(success, "EC addition failed");
-
         (R.x, R.y) = abi.decode(data, (uint256, uint256));
     }
 
@@ -27,7 +24,6 @@ contract ECWeek3 {
         if (matrix.length != n * n || s.length != n || o.length != n) {
             revert("Invalid dimensions");
         }
-
         for (uint256 i = 0; i < n; i++) {
             ECPoint memory result = ECPoint(0, 0); // Initialize to zero point
 
@@ -41,7 +37,6 @@ contract ECWeek3 {
                 return false;
             }
         }
-
         return true;
     }
 
@@ -49,34 +44,21 @@ contract ECWeek3 {
         (bool ok, bytes memory result) = address(7).staticcall(abi.encode(x1, y1, scalar));
         require(ok, "mul failed");
         (x, y) = abi.decode(result, (uint256, uint256));
-    }
-
-    
+    } 
 
     function scalarMul(ECPoint memory p, uint256 scalar) public view returns (ECPoint memory r) {
-        uint256[3] memory input;
-
-        input[0] = p.x;
-        input[1] = p.y;
-        input[2] = scalar;
-        (bool ok, bytes memory result) = address (7).staticcall(abi.encode(input[0], input[1], scalar)); 
+        (bool ok, bytes memory result) = address (7).staticcall(abi.encode(p.x, p.y, scalar)); 
         require(ok, "mul failed");
         (r.x, r.y) = abi.decode(result, (uint256, uint256));
-
-        
     }
 
     function rationalAdd(ECPoint calldata A, ECPoint calldata B, uint256 num, uint256 den) public view returns (bool verified) {
-    require(den != 0, "Denominator cannot be zero.");
-    
-    // return true if the prover knows two numbers that add up to num/den
-    ECPoint memory LHS = add(A, B);
-    uint256 rhs = mulmod(num, EllipticCurve.invMod(den, order), order);
-    (uint RHSx, uint RHSy) = mul(rhs, G.x, G.y);
-  
-    verified = LHS.x == RHSx && LHS.y == RHSy;
-
-    return verified;
-  }
+        require(den != 0, "Denominator cannot be zero.");
+        ECPoint memory LHS = add(A, B);
+        uint256 rhs = mulmod(num, EllipticCurve.invMod(den, order), order);
+        (uint RHSx, uint RHSy) = mul(rhs, G.x, G.y);
+        verified = LHS.x == RHSx && LHS.y == RHSy;
+        return verified;
+    }
 }
    
